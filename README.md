@@ -6,8 +6,8 @@ Quant Matrix CLI builds a synchronized log-return matrix for NIFTY IT and NASDAQ
 1. `data_fetcher.py` downloads adjusted close prices for the configured tickers using `yfinance`.
 2. `data_cleaner.py` drops primary tickers with >5% missing data, swaps in reserve tickers to keep a 30-column matrix, and linearly interpolates small gaps.
 3. `matrix_math.py` converts prices to log returns, shifts U.S. columns by one day to align with Indian trading, and drops any remaining NaNs.
-4. `standardizer.py` z-scores every column, saves the scaler parameters, and exports a correlation heatmap image.
-5. `main.py` orchestrates the process, saves the standardized matrix/history snapshots to `storage/`, and prints summary paths plus any zombie replacements.
+4. `standardizer.py` z-scores every column, saves the scaler parameters, and exports a 30×T aligned matrix heatmap image (tickers × days).
+5. `main.py` orchestrates the process, saves the standardized matrix/history snapshots to `storage/`, also writes Excel-friendly `30×T` CSVs to `outputs/`, and prints summary paths plus any zombie replacements.
 
 ## Repository layout
 - `main.py` – command-line entry point with `--build` and `--verify` flags.
@@ -17,6 +17,8 @@ Quant Matrix CLI builds a synchronized log-return matrix for NIFTY IT and NASDAQ
 - `matrix_math.py` – log-return builder with NYC-to-India alignment.
 - `standardizer.py` – scales, stores scaler metadata, and exports `correlation_heatmap.png`.
 - `storage/` – runtime output (current matrix, backups, scaler params).
+- `outputs/latest/` – latest heatmap + accessible `30×T` CSVs.
+- `outputs/archive/` – dated snapshots of the accessible `30×T` CSVs.
 
 ## Prerequisites (Windows)
 1. Install Python 3.10+ from [python.org][1] and ensure `python` is on your PATH.
@@ -43,7 +45,9 @@ python main.py --build
   - `storage/current_matrix.pkl`
   - `storage/matrix_YYYY_MM_DD.pkl` (daily backup)
   - `storage/scaler_params.pkl`
-  - `correlation_heatmap.png` in the repo root.
+  - `outputs/latest/matrix_heatmap.png`
+  - `outputs/latest/aligned_log_returns_30xT.csv`
+  - `outputs/latest/standardized_matrix_30xT.csv`
 
 ### Verify outputs without rebuilding
 ```powershell
