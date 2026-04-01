@@ -1,24 +1,38 @@
 # Quick Start: How to Run
 
-### 1) One-time build + artifacts
-```powershell
-cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
-py main.py --build
-```
+> **Important**: To run the live application, you **must use two separate terminal windows**.
 
-### 2) Live websocket server (push updates every 5s)
+### 1) Start the Live Websocket Server (Terminal 1)
+Leave this terminal open and running. It fetches data in the background and pushes updates every 5 seconds.
 ```powershell
 cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
 py main.py --serve-live --interval 5 --host 127.0.0.1 --port 8765
 ```
+> **Note:** The current implementation guarantees a websocket update every 5 seconds and fetches as fast as yfinance allows.
 
-### 3) Live CLI dashboard (subscribes to websocket)
+### 2) Start the Live CLI Dashboard (Terminal 2)
+Open a new terminal to connect to the server and view the live streaming dashboard.
 ```powershell
 cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
 py main.py --live --ws-url ws://127.0.0.1:8765
 ```
 
-> **Note:** If you want the server to start a new fetch exactly every 5 seconds even if the previous fetch hasn’t finished, we can change the policy to overlap fetches (not recommended with yfinance throttling), but the current implementation guarantees a websocket update every 5 seconds and fetches as fast as yfinance allows.
+### Understanding the Dashboard Data (Z-Scores)
+The dashboard displays the tail of the **Aligned, Standardized Log-Return Matrix**. 
+- The data shown are **not prices**, but rather **Standardized Z-Scores** of the daily log returns.
+- A value of `0.0` means the stock performed exactly on its average.
+- Positive values (e.g., `1.82`) mean the stock had an unusually good day compared to its average daily return.
+- Negative values (e.g., `-2.54`) mean the stock got crushed compared to its average.
+This standardization scales every stock to the exact same "baseline" (zero mean, unit variance), allowing models to compare volatility fairly across all 30 tickers.
+
+---
+
+### One-time Build (Alternative to live mode)
+If you just want to run the pipeline once and generate the CSV/PNG artifacts:
+```powershell
+cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
+py main.py --build
+```
 
 ---
 
