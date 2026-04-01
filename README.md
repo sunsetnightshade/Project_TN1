@@ -1,4 +1,29 @@
-﻿# Quant Matrix CLI
+# Quick Start: How to Run
+
+### 1) One-time build + artifacts
+```powershell
+cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
+py main.py --build
+```
+
+### 2) Live websocket server (push updates every 5s)
+```powershell
+cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
+py main.py --serve-live --interval 5 --host 127.0.0.1 --port 8765
+```
+
+### 3) Live CLI dashboard (subscribes to websocket)
+```powershell
+cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
+py main.py --live --ws-url ws://127.0.0.1:8765
+```
+
+> **Note:** If you want the server to start a new fetch exactly every 5 seconds even if the previous fetch hasn’t finished, we can change the policy to overlap fetches (not recommended with yfinance throttling), but the current implementation guarantees a websocket update every 5 seconds and fetches as fast as yfinance allows.
+
+---
+
+# Quant Matrix CLI
+
 
 Quant Matrix CLI builds a synchronized log-return matrix for NIFTY IT and NASDAQ mega-cap tickers, applies a strict zombie-ticker replacement policy, standardizes the result, and preserves the latest scaler & matrix for downstream analysis. It also renders a correlation heatmap so you can visualize the normalized relationships across markets.
 

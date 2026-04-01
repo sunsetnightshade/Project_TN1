@@ -18,9 +18,9 @@ class StandardizationResult:
 def render_aligned_matrix_heatmap(
     standardized: pd.DataFrame,
     *,
-    heatmap_path: Path,
+    heatmap_path: Path | None,
     title: str = "Aligned Standardized Matrix Heatmap",
-) -> None:
+) -> "plt.Figure":
     """
     Render a 30×T heatmap (tickers as rows, days as columns) without cell-edge
     artifacts that can make a single cell look "split" in the saved PNG.
@@ -37,7 +37,7 @@ def render_aligned_matrix_heatmap(
         data,
         aspect="auto",
         interpolation="nearest",
-        cmap="vlag",
+        cmap="RdBu_r",
         vmin=-3.0,
         vmax=3.0,
     )
@@ -67,10 +67,12 @@ def render_aligned_matrix_heatmap(
     fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
     fig.tight_layout()
 
-    heatmap_path = Path(heatmap_path)
-    heatmap_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(heatmap_path, dpi=220)
-    plt.close(fig)
+    if heatmap_path is not None:
+        heatmap_path = Path(heatmap_path)
+        heatmap_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(heatmap_path, dpi=220)
+
+    return fig
 
 
 def standardize_and_plot_heatmap(
@@ -99,7 +101,8 @@ def standardize_and_plot_heatmap(
         plt.savefig(heatmap_path, dpi=220)
         plt.close()
     else:
-        render_aligned_matrix_heatmap(standardized, heatmap_path=heatmap_path)
+        fig = render_aligned_matrix_heatmap(standardized, heatmap_path=heatmap_path)
+        plt.close(fig)
 
     params = {
         "mean": scaler.mean_.copy(),

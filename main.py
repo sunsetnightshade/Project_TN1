@@ -2,103 +2,41 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
-from config import ALL_TICKERS, END_DATE, PRIMARY_TICKERS, RESERVE_BENCH, START_DATE
-from data_cleaner import clean_and_replace_zombies
-from data_fetcher import fetch_adj_close_prices
-from matrix_math import build_aligned_log_return_matrix
-from standardizer import standardize_and_plot_heatmap
+from config import END_DATE, START_DATE
+from cli_app import run_interactive_cli, run_live_cli_via_websocket
+from live_ws import default_start_end, run_websocket_live_server
+from pipeline import build_and_serialize
 
 ROOT_DIR = Path(__file__).resolve().parent
 STORAGE_DIR = ROOT_DIR / "storage"
-OUTPUTS_DIR = ROOT_DIR / "outputs"
-LATEST_DIR = OUTPUTS_DIR / "latest"
-ARCHIVE_DIR = OUTPUTS_DIR / "archive"
-
-
-def _backup_name(d: date) -> str:
-    return f"matrix_{d.year:04d}_{d.month:02d}_{d.day:02d}.pkl"
-
-
-def _archive_suffix(d: date) -> str:
-    return f"{d.year:04d}_{d.month:02d}_{d.day:02d}"
-
-
-def _to_accessible_30xT_csv(df: pd.DataFrame, path: Path) -> None:
-    """
-    Export as 30xT (tickers as rows, dates as columns) CSV for Excel-friendly access.
-    """
-    out = df.T.copy()
-    if isinstance(out.columns, pd.DatetimeIndex):
-        out.columns = out.columns.strftime("%Y-%m-%d")
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    out.to_csv(path, index=True)
 
 
 def build_pipeline() -> None:
-    STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-    LATEST_DIR.mkdir(parents=True, exist_ok=True)
-    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-
-    prices = fetch_adj_close_prices(
-        tickers=ALL_TICKERS,
+    artifacts = build_and_serialize(
         start_date=START_DATE,
         end_date=END_DATE,
+        missing_threshold=0.05,
+        root_dir=ROOT_DIR,
     )
 
-    cleaning = clean_and_replace_zombies(
-        prices,
-        primary_tickers=list(PRIMARY_TICKERS),
-        reserve_tickers=list(RESERVE_BENCH),
-        missing_frac_threshold=0.05,
-    )
-
-    # Order of operations enforced in matrix_math.py:
-    # 1) compute log returns, 2) shift US columns by 1, 3) dropna
-    returns = build_aligned_log_return_matrix(cleaning.prices)
-
-    # Main deliverable heatmap: aligned 30xT matrix (no "split cell" artifacts)
-    heatmap_path = LATEST_DIR / "matrix_heatmap.png"
-    std = standardize_and_plot_heatmap(returns, heatmap_path=heatmap_path)
-
-    current_path = STORAGE_DIR / "current_matrix.pkl"
-    backup_path = STORAGE_DIR / _backup_name(date.today())
-    scaler_path = STORAGE_DIR / "scaler_params.pkl"
-
-    std.standardized.to_pickle(current_path)
-    std.standardized.to_pickle(backup_path)
-    pd.to_pickle(std.scaler_params, scaler_path)
-
-    # "Accessible" artifacts: 30 rows x T columns (dates)
-    stamp = _archive_suffix(date.today())
-    _to_accessible_30xT_csv(returns, LATEST_DIR / "aligned_log_returns_30xT.csv")
-    _to_accessible_30xT_csv(
-        returns, ARCHIVE_DIR / f"aligned_log_returns_{stamp}_30xT.csv"
-    )
-    _to_accessible_30xT_csv(std.standardized, LATEST_DIR / "standardized_matrix_30xT.csv")
-    _to_accessible_30xT_csv(
-        std.standardized, ARCHIVE_DIR / f"standardized_matrix_{stamp}_30xT.csv"
-    )
-
+    cleaning = artifacts.cleaning
     if cleaning.dropped_primaries:
         dropped = ", ".join(cleaning.dropped_primaries)
         repl = ", ".join([f"{a}->{b}" for a, b in cleaning.replacements])
         print(f"Zombie tickers dropped: {dropped}")
         print(f"Replacements applied: {repl}")
 
-    print(f"Saved current matrix to: {current_path}")
-    print(f"Saved backup matrix to: {backup_path}")
-    print(f"Saved scaler params to: {scaler_path}")
-    print(f"Saved matrix heatmap to: {heatmap_path}")
-    print(f"Saved accessible aligned returns (30xT) to: {LATEST_DIR / 'aligned_log_returns_30xT.csv'}")
-    print(
-        f"Saved accessible standardized matrix (30xT) to: {LATEST_DIR / 'standardized_matrix_30xT.csv'}"
-    )
+    p = artifacts.paths
+    print(f"Saved current matrix to: {p['current_matrix']}")
+    print(f"Saved backup matrix to: {p['backup_matrix']}")
+    print(f"Saved scaler params to: {p['scaler_params']}")
+    print(f"Saved matrix heatmap to: {p['matrix_heatmap']}")
+    print(f"Saved accessible aligned returns (30xT) to: {p['returns_csv_latest']}")
+    print(f"Saved accessible standardized matrix (30xT) to: {p['standardized_csv_latest']}")
 
 
 def verify_storage() -> int:
@@ -123,7 +61,7 @@ def verify_storage() -> int:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build a synchronized (T x 30) log-return matrix for NIFTY IT + NASDAQ."
+        description="Interactive CLI to build and explore aligned NIFTY+NASDAQ matrices."
     )
     parser.add_argument(
         "--build",
@@ -135,21 +73,103 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Verify storage/ contains expected output files.",
     )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Launch menu-driven interactive CLI (default if no flags).",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Launch live CLI fed by a local websocket server.",
+    )
+    parser.add_argument(
+        "--serve-live",
+        action="store_true",
+        help="Run the local websocket live server (pushes updates every --interval seconds).",
+    )
+    parser.add_argument(
+        "--ws-url",
+        default="ws://127.0.0.1:8765",
+        help="Websocket URL for --live mode.",
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Host for --serve-live websocket server.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Port for --serve-live websocket server.",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=5.0,
+        help="Live rebuild interval in seconds (default: 5).",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
 
-    if not args.build and not args.verify:
-        print("Nothing to do. Use --build and/or --verify.")
-        return 2
+    # Default UX: interactive menu
+    if not any([args.build, args.verify, args.interactive, args.live, args.serve_live]):
+        return run_interactive_cli(root_dir=ROOT_DIR)
 
     if args.build:
         build_pipeline()
 
     if args.verify:
         return verify_storage()
+
+    if args.interactive:
+        return run_interactive_cli(root_dir=ROOT_DIR)
+
+    if args.serve_live:
+        try:
+            import asyncio
+
+            s, e = default_start_end()
+            asyncio.run(
+                run_websocket_live_server(
+                    host=args.host,
+                    port=args.port,
+                    root_dir=ROOT_DIR,
+                    interval_seconds=args.interval,
+                    start_date=s,
+                    end_date=e,
+                    missing_threshold=0.05,
+                )
+            )
+        except ModuleNotFoundError as exc:
+            print(
+                "Missing dependency for live server. Install with:\n"
+                "  py -m pip install websockets\n"
+                f"Details: {exc}"
+            )
+            return 3
+        except KeyboardInterrupt:
+            return 0
+        return 0
+
+    if args.live:
+        try:
+            import asyncio
+
+            asyncio.run(run_live_cli_via_websocket(ws_url=args.ws_url, root_dir=ROOT_DIR))
+        except ModuleNotFoundError as exc:
+            print(
+                "Missing dependency for live mode. Install with:\n"
+                "  py -m pip install websockets\n"
+                f"Details: {exc}"
+            )
+            return 3
+        except KeyboardInterrupt:
+            return 0
 
     return 0
 
