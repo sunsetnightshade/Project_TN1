@@ -17,6 +17,7 @@ from .provider import (
     ProviderProtocolError,
     RealtimeProvider,
     TwelveDataProvider,
+    build_provider,
 )
 
 
@@ -36,21 +37,6 @@ class ProviderScore:
     protocol_errors: int
     unexpected_errors: int
 
-
-def _build_provider(cfg: LiveIngestConfig, provider: str) -> RealtimeProvider:
-    if provider == "twelvedata":
-        return TwelveDataProvider(
-            api_key=str(cfg.twelvedata_api_key),
-            heartbeat_seconds=cfg.heartbeat_seconds,
-            pong_timeout_seconds=cfg.pong_timeout_seconds,
-        )
-    if provider == "polygon":
-        return PolygonProvider(
-            api_key=str(cfg.polygon_api_key),
-            heartbeat_seconds=cfg.heartbeat_seconds,
-            pong_timeout_seconds=cfg.pong_timeout_seconds,
-        )
-    raise ValueError(f"Unsupported provider for bakeoff: {provider}")
 
 
 async def _run_one(cfg: LiveIngestConfig, *, provider_name: str, seconds: int) -> ProviderScore:
@@ -88,7 +74,7 @@ async def _run_one(cfg: LiveIngestConfig, *, provider_name: str, seconds: int) -
             unexpected_errors=0,
         )
 
-    provider = _build_provider(cfg, provider_name)
+    provider = build_provider(cfg, provider_name=provider_name)
     agg = MinuteBarAggregator(price_scale=cfg.price_scale, source=provider_name)
 
     symbols_seen: set[str] = set()

@@ -9,27 +9,12 @@ from config import LiveIngestConfig
 from live_persistence import HourlyParquetJanitor
 
 from .aggregator import MinuteBarAggregator
-from .provider import PolygonProvider, RealtimeProvider, TwelveDataProvider
+from .provider import PolygonProvider, RealtimeProvider, TwelveDataProvider, build_provider
 from .redis_streams import RedisBarProducer
 from .service import LiveIngestService
 from .sinks import BarSink
 from .zmq_fallback import ZeroMQBarProducer
 
-
-def _build_provider(cfg: LiveIngestConfig) -> RealtimeProvider:
-    if cfg.provider == "twelvedata":
-        return TwelveDataProvider(
-            api_key=str(cfg.twelvedata_api_key),
-            heartbeat_seconds=cfg.heartbeat_seconds,
-            pong_timeout_seconds=cfg.pong_timeout_seconds,
-        )
-    if cfg.provider == "polygon":
-        return PolygonProvider(
-            api_key=str(cfg.polygon_api_key),
-            heartbeat_seconds=cfg.heartbeat_seconds,
-            pong_timeout_seconds=cfg.pong_timeout_seconds,
-        )
-    raise ValueError(f"Unsupported provider: {cfg.provider}")
 
 
 def _build_sink(cfg: LiveIngestConfig) -> BarSink:
@@ -72,7 +57,7 @@ async def _janitor_loop(cfg: LiveIngestConfig, root_dir: Path) -> None:
 
 async def run_live_ingest_forever(cfg: LiveIngestConfig, *, root_dir: Path | None = None) -> None:
     root = Path(".") if root_dir is None else Path(root_dir)
-    provider = _build_provider(cfg)
+    provider = build_provider(cfg)
     producer = _build_sink(cfg)
     aggregator = MinuteBarAggregator(price_scale=cfg.price_scale, source=cfg.provider)
     service = LiveIngestService(

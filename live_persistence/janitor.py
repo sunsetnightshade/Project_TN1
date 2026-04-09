@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from config import LiveIngestConfig
+from common.timestamps import parse_iso_utc
 from live_ingest.precision import from_fixed_price
 
 
@@ -31,17 +32,6 @@ class HourlyParquetJanitor:
             db=cfg.redis_db,
             decode_responses=True,
         )
-
-    @staticmethod
-    def _parse_ts(raw: str) -> datetime:
-        if raw.endswith("Z"):
-            dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        else:
-            dt = datetime.fromisoformat(raw)
-
-        if dt.tzinfo is None:
-            return dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
 
     def _partition_path(self, hour_start: datetime) -> Path:
         day = hour_start.strftime("%Y-%m-%d")
@@ -73,8 +63,8 @@ class HourlyParquetJanitor:
                 continue
 
             try:
-                bar_start_dt = self._parse_ts(str(bar_start_raw))
-                bar_end_dt = self._parse_ts(str(bar_end_raw))
+                bar_start_dt = parse_iso_utc(str(bar_start_raw))
+                bar_end_dt = parse_iso_utc(str(bar_end_raw))
             except ValueError:
                 continue
 

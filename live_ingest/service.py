@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from common.timestamps import parse_iso_utc
+
 from .aggregator import MinuteBarAggregator
-from .freeze import FreezeController
-from .gap_logger import GapLogger
-from .metrics import LatencyWindow
+from .resilience import FreezeController, GapLogger, LatencyWindow
 from .provider import HeartbeatTimeoutError, RealtimeProvider
 from .sinks import BarSink
 from .type2_fallback import Type2FallbackVerifier
@@ -80,9 +80,7 @@ class LiveIngestService:
         ingest_lag_ms: float | None = None
         if self.last_bar_end is not None:
             try:
-                bar_end = datetime.fromisoformat(self.last_bar_end)
-                if bar_end.tzinfo is None:
-                    bar_end = bar_end.replace(tzinfo=timezone.utc)
+                bar_end = parse_iso_utc(self.last_bar_end)
                 now = datetime.now(timezone.utc)
                 ingest_lag_ms = max(0.0, (now - bar_end).total_seconds() * 1000.0)
             except ValueError:

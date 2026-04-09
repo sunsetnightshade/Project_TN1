@@ -1,190 +1,165 @@
-﻿## START HERE (FOR COMPLETE BEGINNERS)
+# Quant Matrix CLI
 
-This project now runs on live WebSocket data (Twelve Data or Polygon) -> Redis Streams -> hourly Parquet.
-
-Follow these exact steps.
-
-### 1) Open PowerShell and go to the project folder
-```powershell
-cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
-```
-
-### 2) Create and activate virtual environment (first time only)
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate
-```
-
-You should see `(.venv)` at the start of your terminal line.
-
-### 3) Install dependencies
-```powershell
-py -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 4) Make sure Redis is running
-If Redis is not running, start it first (local install or Docker).
-
-### 5) Set required environment variables
-Choose one provider.
-
-Twelve Data:
-```powershell
-set QM_ENABLE_LIVE_INGEST=1
-set QM_LIVE_PROVIDER=twelvedata
-set TWELVEDATA_API_KEY=your_key_here
-set QM_REDIS_HOST=127.0.0.1
-set QM_REDIS_PORT=6379
-```
-
-Polygon:
-```powershell
-set QM_ENABLE_LIVE_INGEST=1
-set QM_LIVE_PROVIDER=polygon
-set POLYGON_API_KEY=your_key_here
-set QM_REDIS_HOST=127.0.0.1
-set QM_REDIS_PORT=6379
-```
-
-### 6) Start live ingestion (Terminal 1)
-```powershell
-cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
-.\.venv\Scripts\Activate
-py main.py --ingest-live
-```
-
-### 7) Build a live analytics snapshot (Terminal 2)
-```powershell
-cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
-.\.venv\Scripts\Activate
-py main.py --snapshot-live --lookback-minutes 500 --z-window 60 --pca-components 3
-```
-
-### 8) Persist recent live data to Parquet (any terminal)
-```powershell
-py main.py --persist-live-hourly --persist-hours 1
-```
-
-If any command fails, copy the full error text and share it.
+A highly structured, production-ready market data pipeline for **30 NASDAQ-100 US tech stocks**. It builds a Z-score standardized matrix with automatic correlation analysis, zombie ticker detection, and both batch and live WebSocket modes.
 
 ---
 
-# Quant Matrix CLI
+## ⚡ Quick Start 
 
-Quant Matrix CLI is a websocket-first market data pipeline for 30 symbols (Nifty IT + Nasdaq):
-- WebSockets (Twelve Data / Polygon) ingest ticks in real time.
-- Ticks are snapped to 1-minute OHLCV bars.
-- Bars are stored in Redis Streams as hot data windows.
-- Analytics run on rolling windows (log returns, rolling z-score, residual z-score).
-- Hourly janitor appends data to Parquet for fast historical access.
+The software has been heavily optimized so you don't need to learn a complex CLI or pass 10 different flags to just build your data. 
 
-## Core Data Model
+**Run these 3 commands:**
 
-### TYPE 1: Live Memory (Hot Layer)
-- Source: WebSockets (Twelve Data or Polygon).
-- Pulse: 1-minute OHLCV bars per symbol.
-- Precision: fixed-point integer prices (`price * 10^9`).
-- Storage: Redis Streams in RAM.
-- Hot windows:
-  - 60-minute stream for immediate access.
-  - 500-minute stream for execution/rolling analytics.
-
-### TYPE 2: Historical Library (Backup / Verification)
-- Source: university Bloomberg workflow (external).
-- In-repo integration point: local TYPE2 parquet root.
-- Use: heartbeat failover verification + backfill when stream gaps occur.
-
-## Required Runtime Behavior (Implemented)
-- Heartbeat ping/pong watchdog.
-  - Default ping interval: 10 seconds.
-  - Pong timeout: 3 seconds.
-- On heartbeat failure:
-  - Freeze execution marker is written.
-  - Gap event is logged.
-  - TYPE2 parquet backfill is attempted.
-  - Reconnect cycle starts.
-- Redis write latency telemetry includes p95 and threshold alerts.
-- Rolling analytics use vectorized NumPy operations and `sliding_window_view`.
-
-## Main Commands
-
-### Start live ingestion
 ```powershell
+# 1. Setup your environment (first time only)
+cd "C:\Users\Naman Sinha\Desktop\quant_matrix_cli"
+py -m venv .venv && .\.venv\Scripts\Activate && pip install -r requirements.txt
+
+# 2. Build the matrix (Fetches data, formats, standardizes, creates heatmaps)
+py main.py
+
+# 3. Open the visual dashboard
+py -m streamlit run app.py
+```
+
+That's it! If you ran `py main.py`, your fresh heatmaps and CSVs immediately appear in the **`outputs/latest/`** folder. 
+
+---
+
+## 🛠 Command Guide & Expected Outputs
+
+### Command 1: The Core Pipeline Builder
+Command: `py main.py`
+
+**What it does:**
+1. Connects to the data provider and fetches a 2-year history for all 30 US Tech stocks.
+2. Runs a **Zombie Sweeper**: Identifies any ticker missing >5% of its data, throws it out, and dynamically replaces it with a healthy reserve ticker.
+3. Aligns the data into a strict 30xT matrix, ignoring market holidays, then calculates the pure Log Return matrix.
+4. Z-Score standardizes the entire grid.
+5. Emits heatmaps and machine-readable data files.
+6. **Smart-Archives**: Identifies whatever was previously in your `outputs/latest/` folder and moves it to `outputs/archive/<timestamp>/` so you never mix up an old run with a new run.
+
+**The Output Structure You Will See:**
+When you run `py main.py`, you will see a highly structured, Unicode-safe readout in your terminal:
+```text
+=================================================================
+|        QUANT MATRIX  --  NASDAQ-100 Tech (30 Stocks)          |
+=================================================================
+
+-----------------------------------------------------------------
+  Building Quant Matrix
+-----------------------------------------------------------------
+  [INFO] Date range : 2024-04-09 -> 2026-04-09
+  [INFO] Tickers    : 30 primary + 5 reserve
+  [OK]   All 30 tickers healthy - no zombies detected
+
+-----------------------------------------------------------------
+  Outputs Saved
+-----------------------------------------------------------------
+  [OK]   Matrix heatmap        : outputs/latest/matrix_heatmap.png
+  [OK]   Correlation heatmap   : outputs/latest/correlation_heatmap.png
+  [OK]   Standardized CSV      : outputs/latest/standardized_matrix_30xT.csv
+  [OK]   Usage guide           : outputs/latest/GUIDE.md
+  [OK]   Current matrix pickle : storage/current_matrix.pkl
+```
+
+**Where the data goes (What the outputs mean):**
+Inside `outputs/latest/` you will find:
+- **`matrix_heatmap.png`**: Every row is a stock, every column is a day. Bright Red = overperforming standard deviation. Deep Blue = underperforming.
+- **`correlation_heatmap.png`**: A 30x30 grid proving how correlated the US tech sector is. If you see deep blue squares, that stock broke correlation pattern.
+- **`standardized_matrix_30xT.csv`**: The exact numerical Z-score standard grid you can import into Excel, R, or Python.
+- **`GUIDE.md`**: An auto-generated English instruction manual placed inside the folder that explains the files to whichever analyst is reading the folder.
+
+### Command 2: The Visual Dashboard
+Command: `py -m streamlit run app.py`
+
+**What it does:**
+Bootstraps a local visual interface in your browser containing 4 tabs:
+1. **Build Tab**: Run the pipeline directly from the browser instead of the command line. Allows you to set specific date ranges.
+2. **Matrix Tab**: See the 30xT Matrix Heatmap visually rendered, and download the CSV.
+3. **Correlation Tab**: Features an active slider where you can flag pairs below a certain threshold.
+4. **Archive Tab**: Visually explore past data runs! Select any historical timestamp and preview what the market looked like exactly on that run.
+
+### Command 3: System Verification
+Command: `py main.py --verify`
+
+**What it does:**
+Checks your local environment and outputs a checklist ensuring all critical files (Heatmaps, Parquet stores, Data Params) actually exist on disk and aren't corrupted.
+
+---
+
+## 🏗 System Architecture
+
+### 1. Data Pipeline Flow
+
+```mermaid
+flowchart LR
+    subgraph "Data Pipeline Flow (Batch Process)"
+        FETCH["Fetch Adj Close<br/>(2-year window)"]
+        CLEAN["Zombie Ticker<br/>Detection >5% NaN"]
+        INTERP["Linear Interpolation<br/>(≤2 day gaps)"]
+        LOG["Log Returns<br/>ln(Pt / Pt-1)"]
+        ZSCORE["Z-Score<br/>StandardScaler"]
+    end
+
+    subgraph "Archival Output Engine"
+        HEAT["Matrix Heatmap<br/>30xT PNG"]
+        CORR["Correlation Heatmap<br/>30x30 PNG"]
+        CSV["CSV Exports<br/>Grid orientation"]
+        GUIDE["GUIDE.md<br/>+ metadata"]
+    end
+
+    FETCH --> CLEAN --> INTERP --> LOG --> ZSCORE
+    ZSCORE --> HEAT & CORR & CSV & GUIDE
+```
+
+### 2. Folder Layout & Organization
+The software leverages an organizational structure so raw logs never mix with artifacts.
+
+```mermaid
+graph TD
+    subgraph "Entrypoints"
+        MAIN["main.py (The execution core)"]
+        APP["app.py (The visual dashboard)"]
+    end
+
+    subgraph "File System"
+        STORAGE["storage/"]
+        LATEST["outputs/latest/"]
+        ARCHIVE["outputs/archive/"]
+    end
+    
+    MAIN -->|Overwrites current matrix| STORAGE
+    MAIN -->|Generates fresh readable artifacts| LATEST
+    MAIN -->|Rotates past artifacts safely away| ARCHIVE
+```
+
+---
+
+## 📡 Live Ingestion Setup (Optional)
+
+If you are using real-time WebSockets, Quant Matrix also supports streaming infrastructure. WebSockets snap ticks into 1-minute OHLCV bars hosted in Redis.
+
+**Prerequisites:** Redis running on `127.0.0.1:6379` + Valid Twelve Data or Polygon Key.
+
+```powershell
+# Set your environment
+set QM_ENABLE_LIVE_INGEST=1
+set QM_LIVE_PROVIDER=twelvedata
+set TWELVEDATA_API_KEY=your_twelvedata_key
+
+# 1. Start the permanent ingestion loop
 py main.py --ingest-live
+
+# 2. Build an analytics snapshot
+py main.py --snapshot-live
+
+# 3. Persist memory bars to Parquet for backup
+py main.py --persist-live-hourly
 ```
 
-### Build live snapshot from Redis
+## 🧪 Running Tests
+The suite has 45 passing tests covering memory stability, data math, configuration integrity, and timestamp logic.
 ```powershell
-py main.py --snapshot-live --lookback-minutes 500 --z-window 60 --pca-components 3
+py -m unittest discover -s tests -p "test_*.py" -v
 ```
-
-### Persist Redis hot data to Parquet
-```powershell
-py main.py --persist-live-hourly --persist-hours 1
-```
-
-### Run provider bake-off (Twelve Data vs Polygon)
-```powershell
-py main.py --bakeoff-live --bakeoff-seconds 300
-```
-
-## Important Environment Variables
-
-- `QM_ENABLE_LIVE_INGEST=1` enable live ingest mode.
-- `QM_LIVE_PROVIDER=twelvedata|polygon` choose provider.
-- `TWELVEDATA_API_KEY` or `POLYGON_API_KEY` provider auth.
-- `QM_REDIS_HOST`, `QM_REDIS_PORT`, `QM_REDIS_DB` Redis connection.
-- `QM_REDIS_STREAM_60`, `QM_REDIS_STREAM_500` stream keys.
-- `QM_REDIS_MAXLEN_60`, `QM_REDIS_MAXLEN_500` pruning lengths (XTRIM via stream maxlen).
-- `QM_LIVE_HEARTBEAT_SECONDS` default 10.
-- `QM_LIVE_PONG_TIMEOUT_SECONDS` default 3.
-- `QM_LIVE_LATENCY_ALERT_MS` default 100.
-- `QM_ENABLE_HOURLY_JANITOR` default 1.
-- `QM_JANITOR_INTERVAL_SECONDS` default 3600.
-- `QM_JANITOR_LOOKBACK_HOURS` default 2.
-- `QM_TYPE2_PARQUET_ROOT` default `outputs/live/parquet`.
-- `QM_BAR_SINK=redis|zeromq` optional sink override.
-- `QM_ZMQ_ENDPOINT` ZeroMQ endpoint when using ZeroMQ sink.
-
-## Output Artifacts
-
-- Live snapshot CSVs: `outputs/latest/live/`
-  - `live_close_1m_30xT.csv`
-  - `live_log_returns_1m_30xT.csv`
-  - `live_rolling_zscores_1m_30xT.csv`
-  - `live_latest_zscore.csv`
-  - `live_latest_residual_zscore.csv`
-  - `live_pca_explained.csv`
-- Failover markers/logs:
-  - `outputs/live/freeze.flag`
-  - `outputs/live/gaps.jsonl`
-- Hourly parquet partitions:
-  - `outputs/live/parquet/date=YYYY-MM-DD/hour=HH/bars.parquet`
-- Provider bake-off reports:
-  - `outputs/live/provider_bakeoff_*.json`
-
-## Repository Layout
-
-- `main.py` command-line entrypoint.
-- `config.py` live ingest and runtime configuration.
-- `live_ingest/` websocket providers, heartbeat, aggregation, sinks, analytics, snapshot, bake-off.
-- `live_persistence/` parquet janitor.
-- `pipeline.py` orchestration helpers (snapshot + persistence entry points).
-- `tests/` unit tests for precision, aggregation, analytics, and TYPE2 fallback.
-
-## Legacy Note
-
-`yfinance` is no longer the active source path.
-The old fetcher path is disabled by default and only runs if `QM_ENABLE_LEGACY_YFINANCE=1` is explicitly set.
-
-## Run Tests
-```powershell
-py -m unittest discover -s tests -p "test_*.py"
-```
-
-## GitHub workflow hints
-1. `git init` (if not already a repo) and commit source + README.
-2. `git remote add origin https://github.com/sunsetnightshade/stat_cli.git`.
-3. Push your branch and open a pull request.
-4. Share the PR URL when ready.

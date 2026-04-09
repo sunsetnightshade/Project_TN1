@@ -5,44 +5,73 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 
 
-NIFTY_10: list[str] = [
-    "INFY.NS",
-    "TCS.NS",
-    "HCLTECH.NS",
-    "TECHM.NS",
-    "WIPRO.NS",
-    "LTIM.NS",
-    "PERSISTENT.NS",
-    "COFORGE.NS",
-    "MPHASIS.NS",
-    "OFSS.NS",
+# ---------------------------------------------------------------------------
+# Ticker Universe — 30 US-only Nasdaq-100 Technology stocks
+# ---------------------------------------------------------------------------
+
+NASDAQ_30: list[str] = [
+    # Mega-cap / FAANG+ core
+    "AAPL",  # Apple
+    "MSFT",  # Microsoft
+    "NVDA",  # Nvidia
+    "GOOGL", # Alphabet
+    "META",  # Meta Platforms
+    "AMZN",  # Amazon
+    "TSLA",  # Tesla
+    "AVGO",  # Broadcom
+    "ADBE",  # Adobe
+    "NFLX",  # Netflix
+    # Semiconductors
+    "TXN",   # Texas Instruments
+    "QCOM",  # Qualcomm
+    "AMAT",  # Applied Materials
+    "AMD",   # Advanced Micro Devices
+    "LRCX",  # Lam Research
+    "KLAC",  # KLA Corporation
+    "SNPS",  # Synopsys
+    "CDNS",  # Cadence Design
+    "MRVL",  # Marvell Technology
+    # Enterprise Software / SaaS
+    "INTU",  # Intuit
+    "CSCO",  # Cisco
+    "CRWD",  # CrowdStrike
+    "PANW",  # Palo Alto Networks
+    "FTNT",  # Fortinet
+    "WDAY",  # Workday
+    "DDOG",  # Datadog
+    "ZS",    # Zscaler
+    "TEAM",  # Atlassian
+    "MDB",   # MongoDB
+    "ON",    # ON Semiconductor
 ]
 
-NASDAQ_20: list[str] = [
-    "AAPL",
-    "MSFT",
-    "NVDA",
-    "GOOGL",
-    "META",
-    "AMZN",
-    "TSLA",
-    "AVGO",
-    "ADBE",
-    "TXN",
-    "QCOM",
-    "AMAT",
-    "INTU",
-    "CSCO",
-    "NFLX",
-    "PEP",
-    "COST",
-    "TMUS",
-    "CMCSA",
-    "AMD",
+assert len(NASDAQ_30) == 30, (
+    f"NASDAQ_30 must have exactly 30 tickers, got {len(NASDAQ_30)}"
+)
+assert len(set(NASDAQ_30)) == 30, (
+    f"NASDAQ_30 contains duplicates: {[t for t in NASDAQ_30 if NASDAQ_30.count(t) > 1]}"
+)
+
+# 5 reserve / backup tickers — used for zombie ticker replacement only
+RESERVE_BENCH: list[str] = [
+    "INTC",   # Intel
+    "PYPL",   # PayPal
+    "CRM",    # Salesforce
+    "ADSK",   # Autodesk
+    "ISRG",   # Intuitive Surgical
 ]
 
-RESERVE_BENCH: list[str] = ["INTC", "PYPL", "CRM", "ADSK", "ISRG", "GILD"]
+assert len(RESERVE_BENCH) == 5, (
+    f"RESERVE_BENCH must have exactly 5 tickers, got {len(RESERVE_BENCH)}"
+)
 
+PRIMARY_TICKERS: list[str] = NASDAQ_30
+ALL_TICKERS: list[str] = PRIMARY_TICKERS + RESERVE_BENCH
+
+
+# ---------------------------------------------------------------------------
+# Date defaults — rolling 2-year lookback from today
+# ---------------------------------------------------------------------------
 
 def _today() -> date:
     return date.today()
@@ -52,9 +81,9 @@ END_DATE: date = _today()
 START_DATE: date = END_DATE - timedelta(days=730)
 
 
-PRIMARY_TICKERS: list[str] = NIFTY_10 + NASDAQ_20
-ALL_TICKERS: list[str] = PRIMARY_TICKERS + RESERVE_BENCH
-
+# ---------------------------------------------------------------------------
+# Live ingest settings
+# ---------------------------------------------------------------------------
 
 LIVE_PROVIDER_CHOICES: tuple[str, str] = ("twelvedata", "polygon")
 LIVE_BAR_SINK_CHOICES: tuple[str, str] = ("redis", "zeromq")
@@ -192,4 +221,3 @@ def validate_live_ingest_config(
             raise ValueError("TWELVEDATA_API_KEY is required for provider 'twelvedata'")
         if cfg.provider == "polygon" and not cfg.polygon_api_key:
             raise ValueError("POLYGON_API_KEY is required for provider 'polygon'")
-

@@ -5,6 +5,7 @@ from typing import Iterable
 
 import pandas as pd
 
+from common.timestamps import parse_iso_utc
 from .precision import from_fixed_price
 
 
@@ -38,10 +39,6 @@ class RedisLiveConsumer:
     def ping(self) -> bool:
         return bool(self._client.ping())
 
-    def _parse_ts(self, raw: str) -> datetime:
-        if raw.endswith("Z"):
-            return datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        return datetime.fromisoformat(raw)
 
     def build_close_matrix(self, *, limit_minutes: int) -> pd.DataFrame:
         count = max(1, limit_minutes * max(1, len(self.symbols)) * 3)
@@ -62,7 +59,7 @@ class RedisLiveConsumer:
                 continue
 
             try:
-                ts = self._parse_ts(str(ts_raw))
+                ts = parse_iso_utc(str(ts_raw))
                 close_fixed = int(close_raw)
                 close = from_fixed_price(close_fixed, scale=self.price_scale)
             except (ValueError, TypeError):

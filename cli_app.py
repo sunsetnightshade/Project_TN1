@@ -14,8 +14,11 @@ from pipeline import PipelineArtifacts, build_and_serialize
 from pca_tools import pca_beta_alpha, pca_fit_summary
 
 
+import subprocess
+
+
 def _clear_screen() -> None:
-    os.system("cls" if os.name == "nt" else "clear")
+    subprocess.call("cls" if os.name == "nt" else "clear", shell=True)
 
 
 def _press_enter() -> None:
@@ -72,8 +75,8 @@ def run_interactive_cli(*, root_dir: Path) -> int:
 
     while True:
         _clear_screen()
-        _print_header("Quant Matrix CLI (Interactive)")
-        print("1) Build pipeline (fetch -> clean -> align -> standardize -> save)")
+        _print_header("Quant Matrix CLI (Interactive) — NASDAQ-100 Tech, 30 Stocks")
+        print("1) Build pipeline (fetch → clean → log returns → standardize → save)")
         print("2) Verify storage outputs")
         print("3) Show current matrix quick stats")
         print("4) Run PCA (beta/alpha) on current matrix")
@@ -99,7 +102,7 @@ def run_interactive_cli(*, root_dir: Path) -> int:
             end = end_default if not e else date.fromisoformat(e)
             thr = missing_threshold_default if not t else float(t)
 
-            print("\nBuilding... (yfinance can be slow; retries on throttling)")
+            print("\nBuilding... (fetching 2-year window for NASDAQ-100 US-only tickers)")
             last_artifacts = build_and_serialize(
                 start_date=start,
                 end_date=end,

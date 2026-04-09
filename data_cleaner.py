@@ -24,10 +24,14 @@ def clean_and_replace_zombies(
     Zombie ticker rule:
     - If any primary ticker has >5% NaNs over the window, drop it entirely.
     - Replace with the next available reserve ticker to keep strict 30 columns.
-    Interpolation rule (guarded):
-    - Only interpolate tiny gaps *within* each market's open days.
-    - Do NOT interpolate across days where a market is closed (e.g., US holidays),
-      so downstream return/shift/dropna alignment remains calendar-faithful.
+
+    Interpolation rule:
+    - Linear interpolation for 1–2 day gaps within the US trading calendar.
+    - Only interpolate on days when any US ticker has data (market open days).
+    - Do NOT interpolate across holidays/weekends — this is calendar-faithful.
+
+    NOTE: India (.NS) market separation has been removed. The universe is now
+    30 US-only Nasdaq-100 stocks — all tickers share the same US trading calendar.
     """
     if not isinstance(prices.index, pd.DatetimeIndex):
         raise TypeError("prices index must be a DatetimeIndex")
@@ -68,7 +72,7 @@ def clean_and_replace_zombies(
 
         replacements.append((z, next_reserve))
 
-        # Drop zombie column and substitute reserve at the same position in the primary list
+        # Drop zombie column and substitute reserve at the same position
         if z in df.columns:
             df = df.drop(columns=[z])
         idx = primaries.index(z)
@@ -81,6 +85,10 @@ def clean_and_replace_zombies(
     df = df.reindex(columns=primaries)
     df = df.astype(float)
 
+    # Interpolate short gaps on US market open days
+    # A "US open day" is any row where at least one ticker has non-NaN data.
+    us_open = df.notna().any(axis=1)
+
     def _interpolate_on_open_days(frame: pd.DataFrame, open_mask: pd.Series) -> pd.DataFrame:
         if frame.empty:
             return frame
@@ -92,19 +100,10 @@ def clean_and_replace_zombies(
         frame.loc[open_mask] = subset
         return frame
 
-    india_cols = [c for c in df.columns if str(c).endswith(".NS")]
-    us_cols = [c for c in df.columns if c not in india_cols]
-
-    if india_cols:
-        india_open = df[india_cols].notna().any(axis=1)
-        df[india_cols] = _interpolate_on_open_days(df[india_cols], india_open)
-    if us_cols:
-        us_open = df[us_cols].notna().any(axis=1)
-        df[us_cols] = _interpolate_on_open_days(df[us_cols], us_open)
+    df = _interpolate_on_open_days(df, us_open)
 
     return CleaningResult(
         prices=df,
         dropped_primaries=tuple(dropped),
         replacements=tuple(replacements),
     )
-

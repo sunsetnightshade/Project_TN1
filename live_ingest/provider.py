@@ -262,3 +262,40 @@ class PolygonProvider(RealtimeProvider):
                         timestamp=ts,
                         source="polygon",
                     )
+
+
+# ---------------------------------------------------------------------------
+# Public factory — shared by runner.py and bakeoff.py (single source of truth)
+# ---------------------------------------------------------------------------
+
+def build_provider(
+    cfg: "LiveIngestConfig",
+    *,
+    provider_name: str | None = None,
+) -> RealtimeProvider:
+    """
+    Construct the correct RealtimeProvider from a LiveIngestConfig.
+
+    Args:
+        cfg: live ingest configuration
+        provider_name: override provider name (default: cfg.provider)
+
+    Raises:
+        ValueError: if provider is not supported or API key is missing
+    """
+    from config import LiveIngestConfig  # local import to avoid circular
+
+    name = (provider_name or cfg.provider).lower()
+    if name == "twelvedata":
+        return TwelveDataProvider(
+            api_key=str(cfg.twelvedata_api_key),
+            heartbeat_seconds=cfg.heartbeat_seconds,
+            pong_timeout_seconds=cfg.pong_timeout_seconds,
+        )
+    if name == "polygon":
+        return PolygonProvider(
+            api_key=str(cfg.polygon_api_key),
+            heartbeat_seconds=cfg.heartbeat_seconds,
+            pong_timeout_seconds=cfg.pong_timeout_seconds,
+        )
+    raise ValueError(f"Unsupported provider: '{name}'. Allowed: twelvedata, polygon")

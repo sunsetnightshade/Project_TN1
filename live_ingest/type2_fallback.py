@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from common.timestamps import parse_iso_utc_optional
 from .models import MinuteBar
 from .precision import to_fixed_price
 
@@ -28,22 +29,6 @@ class Type2FallbackVerifier:
         base = Path(root_dir)
         raw = Path(parquet_root)
         self.parquet_root = raw if raw.is_absolute() else (base / raw)
-
-    @staticmethod
-    def _parse_iso(raw: str | None) -> datetime | None:
-        if raw is None:
-            return None
-        try:
-            if raw.endswith("Z"):
-                dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-            else:
-                dt = datetime.fromisoformat(raw)
-        except ValueError:
-            return None
-
-        if dt.tzinfo is None:
-            return dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
 
     def verify_market_state(
         self,
@@ -91,7 +76,7 @@ class Type2FallbackVerifier:
                 note=f"TYPE2 timestamps invalid in {latest_file}",
             )
 
-        reference = self._parse_iso(last_bar_end)
+        reference = parse_iso_utc_optional(last_bar_end)
         if reference is None:
             return Type2VerificationResult(
                 ok=True,
@@ -118,7 +103,7 @@ class Type2FallbackVerifier:
         until: datetime,
         price_scale: int,
     ) -> list[MinuteBar]:
-        start = self._parse_iso(after_bar_end)
+        start = parse_iso_utc_optional(after_bar_end)
         if start is None:
             return []
 
