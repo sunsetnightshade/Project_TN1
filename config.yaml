@@ -1,0 +1,161 @@
+# Nightshade Quantitative Trading System - Master Configuration
+
+secrets:
+  vault_path: "~/.nightshade/vault.enc"       # Path to encrypted secrets vault
+  salt_path: "~/.nightshade/vault.salt"        # Path to PBKDF2 salt file
+
+logging:
+  level: "INFO"                                # Global log level: DEBUG/INFO/WARNING/ERROR/CRITICAL
+  log_dir: "~/.nightshade/logs"               # Directory for rotating log files
+  max_bytes: 10485760                          # Max log file size in bytes (10MB)
+  backup_count: 90                             # Number of daily log files to retain
+  structured: true                             # If true, emit JSON-structured log lines
+
+alerting:
+  method: "file"                               # Alert delivery method: "file" or "email"
+  alert_log_path: "~/.nightshade/alerts.log"  # Path to dedicated alert log file
+  email:
+    smtp_host: "smtp.gmail.com"               # SMTP server hostname
+    smtp_port: 587                            # SMTP server port
+    sender_address: ""                        # Loaded from secrets at runtime
+    recipient_address: ""                     # Recipient email address
+
+database:
+  questdb:
+    host: "localhost"
+    http_port: 9000                           # QuestDB HTTP/REST port
+    ilp_port: 9009                            # Influx Line Protocol ingestion port
+    pg_port: 8812                             # PostgreSQL wire protocol port
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    max_stream_len: 100000                    # Maximum messages per instrument Redis stream
+
+system:
+  environment: "paper"                        # "paper" or "live"
+  timezone: "UTC"
+  heartbeat_interval_seconds: 30
+
+research:
+  data_lookback_days: 504                     # 2 years in trading days
+  rolling_window_short: 20
+  rolling_window_long: 252
+  min_data_quality_score: 2
+
+risk:
+  daily_loss_limit_pct: 0.045                # Hard kill trigger
+  soft_stop_pct: 0.040                       # Soft stop trigger
+  warning_pct: 0.035                         # Warning trigger
+  max_single_name_pct: 0.05                  # Max single-instrument gross exposure
+  max_sector_pct: 0.30                       # Max sector gross exposure
+  target_portfolio_volatility: 0.12          # Annualized vol target
+  vpin_suspension_threshold: 0.70
+  correlation_concentration_limit: 0.70
+  max_adv_fraction: 0.01                     # Max order size as fraction of ADV
+
+execution:
+  paper_slippage_bps: 5.0
+  transaction_cost_bps: 10.0
+  twap_duration_minutes: 30
+  order_timeout_seconds: 300
+  fill_timeout_seconds: 60
+
+security_master:
+  db_path: "~/.nightshade/security_master.db"
+  allowed_instrument_types: [EQUITY, ETF, FUTURE, CRYPTO, INDEX]
+  allowed_action_types: [SPLIT, REVERSE_SPLIT, DIVIDEND_CASH, DIVIDEND_STOCK, MERGER_ACQUIRED, MERGER_ACQUIRER, SPINOFF, NAME_CHANGE, TICKER_CHANGE]
+  price_change_alert_threshold: 0.40     # Overnight change fraction triggering missed-action check
+  bootstrap:
+    instruments_file: "data/instruments.json"
+    universe_file: "data/initial_universe.json"
+
+data_lake:
+  bronze:
+    table_name: "ticks_bronze"
+    write_batch_size: 500              # Ticks buffered before QuestDB flush
+    write_batch_timeout_ms: 100        # Max ms before flush regardless of batch size
+  silver:
+    table_name: "bars_silver"
+    bar_intervals: ["1m", "5m", "1d"]
+    aggregation_run_time: "16:30"      # UTC, after market close
+  gold:
+    table_name: "features_gold"
+    feature_run_time: "17:00"          # UTC
+    min_history_days: 252
+
+websocket:
+  polygon_url: "wss://socket.polygon.io/stocks"
+  subscription_channels: ["T.*"]
+  reconnect_initial_delay_seconds: 1
+  reconnect_max_delay_seconds: 60
+  reconnect_max_attempts_before_critical: 10
+
+gap_tracker:
+  db_path: "~/.nightshade/gap_registry.db"
+  max_fill_attempts: 3
+  polygon_rest_base_url: "https://api.polygon.io"
+
+live_data:
+  polygon:
+    ws_url: "wss://socket.polygon.io/stocks"
+    rest_base_url: "https://api.polygon.io"
+    rest_rate_limit_per_minute: 5           # Free tier; paid: 100
+    ws_reconnect_initial_delay_seconds: 1
+    ws_reconnect_max_delay_seconds: 60
+    ws_reconnect_critical_after_attempts: 10
+    write_buffer_size: 500
+    write_buffer_timeout_ms: 500
+  databento:
+    ws_gateway_url: "wss://live.databento.com/v0/live"
+    dataset_us_equities: "XNAS.ITCH"
+    dataset_india_equities: "XNSE.ITCH"
+    schema: "trades"
+
+sequence_tracker:
+  gap_alert_threshold: 1
+  gap_critical_count: 10
+
+health_monitor:
+  check_interval_seconds: 10
+  degraded_threshold: 50
+  failed_threshold: 20
+  redis_key_expiry_seconds: 60
+
+supervisor:
+  status_write_interval_seconds: 10
+  command_poll_interval_seconds: 5
+
+exchange_hours:
+  config_file: "data/exchange_hours.yaml"
+  reload_time_utc: "00:00"
+
+observability:
+  metrics_collector:
+    socket_path: "/tmp/nightshade_metrics.sock"
+    batch_size: 200
+    flush_interval_seconds: 5
+    max_buffer_size: 10000
+  health_monitor:
+    check_interval_seconds: 30
+    failure_threshold: 3
+    degraded_threshold: 2
+    component_timeout_seconds: 5.0
+    redis_key_expiry_seconds: 90
+  system_resources:
+    sample_interval_seconds: 15
+    cpu_alert_pct: 85
+    memory_alert_pct: 90
+    disk_alert_pct: 85
+    data_dir: "~/.nightshade"
+  audit_log:
+    db_path: "~/.nightshade/audit.db"
+    write_lock_timeout_seconds: 5.0
+  dashboard:
+    output_path: "~/.nightshade/dashboard.txt"
+    refresh_interval_seconds: 30
+    ascii_bar_width: 25
+    alerts_to_display: 10
+    max_line_width: 100
+  metrics_table_name: "metrics_layer2"
+  health_table_name: "health_history"

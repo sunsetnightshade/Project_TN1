@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  questdb:
+    image: questdb/questdb:8.1.4
+    container_name: nightshade_questdb
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # HTTP console
+      - "9009:9009"   # ILP ingestion
+      - "8812:8812"   # PostgreSQL wire
+    volumes:
+      - questdb_data:/root/.questdb
+    environment:
+      - QDB_CAIRO_COMMIT_LAG=1000
+      - QDB_LINE_TCP_MAINTENANCE_JOB_INTERVAL=100
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: nightshade_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+
+volumes:
+  questdb_data:
+  redis_data:

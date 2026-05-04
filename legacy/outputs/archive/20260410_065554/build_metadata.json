@@ -1,0 +1,46 @@
+{
+  "build_timestamp_utc": "2026-04-10T06:54:58.232579+00:00",
+  "date_range": {
+    "start": "2024-04-10",
+    "end": "2026-04-10"
+  },
+  "tickers": [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "GOOGL",
+    "META",
+    "AMZN",
+    "TSLA",
+    "AVGO",
+    "ADBE",
+    "NFLX",
+    "TXN",
+    "QCOM",
+    "AMAT",
+    "AMD",
+    "LRCX",
+    "KLAC",
+    "SNPS",
+    "CDNS",
+    "MRVL",
+    "INTU",
+    "CSCO",
+    "CRWD",
+    "PANW",
+    "FTNT",
+    "WDAY",
+    "DDOG",
+    "ZS",
+    "TEAM",
+    "MDB",
+    "ON"
+  ],
+  "matrix_shape": {
+    "rows_T": 500,
+    "cols_tickers": 30
+  },
+  "zombies_dropped": [],
+  "replacements": [],
+  "correlation_outlier_count": 130
+}

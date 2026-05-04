@@ -1,180 +1,188 @@
-# Quant Matrix CLI
+# Nightshade Quantitative System
 
-A highly structured, production-ready market data pipeline for **30 NASDAQ-100 US tech stocks**. It builds a Z-score standardized matrix with automatic correlation analysis, zombie ticker detection, and both batch and live WebSocket modes.
+Nightshade is an institutional-grade, low-latency market data pipeline built for ingesting and observing real-time WebSocket tick data. The system features bitemporal QuestDB storage, an ultra-fast Redis stream pipeline, automated gap filling, and a comprehensive observability dashboard.
 
----
+## 🚀 Quick Start Guide
 
-## ⚡ Quick Start 
+The pipeline has been rebuilt into modular, robust layers. Follow these exact steps to start ingesting and observing market data on your local machine.
 
-The software has been heavily optimized so you don't need to learn a complex CLI or pass 10 different flags just to build your data. 
+### 1. Prerequisites
 
-**Run these 3 steps:**
+Before you start, ensure you have the following installed on your machine:
+- **Python 3.11 or higher**
+- **Docker & Docker Compose** (required to run QuestDB and Redis locally)
+- **Git**
 
-**1. Setup your environment (first time only)**
+### 2. Environment Setup
+
+Copy and paste the following commands into your terminal:
+
 ```bash
-git clone https://github.com/sunsetnightshade/stat_cli.git
-cd stat_cli
+# Clone the repository and enter the directory
+git clone https://github.com/notnamansinha/Nightshade.git
+cd Nightshade
 
-# Create a virtual environment
+# Create a clean Python virtual environment
 python -m venv .venv
 
-# Activate it (Windows):
-.venv\Scripts\activate
-# OR Activate it (Linux/Mac):
+# Activate the virtual environment:
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.venv\Scripts\activate.bat
+# Linux / macOS:
 source .venv/bin/activate
 
+# Install strictly the required dependencies
 pip install -r requirements.txt
 ```
 
-**2. Build the matrix (Fetches data, formats, standardizes, creates heatmaps)**
+### 3. Start the Infrastructure Services (Docker)
+
+Nightshade relies on **QuestDB** (port 9000) for tick persistence and **Redis** (port 6379) for caching and streaming.
+
 ```bash
-python main.py
+# Start both services in the background
+docker-compose up -d
+
+# Wait a few seconds to let them fully boot
 ```
 
-**3. Open the visual dashboard**
+### 4. Setup Your Secure Vault & API Keys
+
+Nightshade uses AES-GCM encryption for all secrets. The first time you run this command, it will ask you to create a **Master Password**. You will need this password every time you start the live ingestor.
+
+*Note: Databento is optional. If you do not have a Databento key, the system will gracefully skip it and rely on Polygon.*
+
 ```bash
-python -m streamlit run app.py
+# Register your primary data provider key (Required)
+python -m layer0.secrets set polygon.api_key <YOUR_POLYGON_KEY>
+
+# Register a backup data provider key (Optional)
+python -m layer0.secrets set databento.api_key <YOUR_DATABENTO_KEY>
 ```
 
-That's it! If you ran `python main.py`, your fresh heatmaps and CSVs immediately appear in the **`outputs/latest/`** folder. 
+### 5. Bootstrap the Identity & Data Lakes
+
+Before the ingestion engine can start, it needs to know what stocks to track and how to structure the database.
+
+```bash
+# 1. Initialize the Security Master (creates the list of 30 US Tech stocks)
+# It will prompt for your Master Password.
+python -m layer1a.cli bootstrap
+
+# 2. Create the bitemporal tables in QuestDB (Bronze, Silver, Gold schemas)
+python -m layer1b.ingestor_cli schema --create
+```
 
 ---
 
-## 🛠 Command Guide & Expected Outputs
+## 💻 Running the Live Pipeline
 
-### Command 1: The Core Pipeline Builder
-Command: `py main.py`
+Nightshade separates live data ingestion and system observability into independent CLI modules. Open two different terminal windows to run them side-by-side.
 
-**What it does:**
-1. Connects to the data provider and fetches a 2-year history for all 30 US Tech stocks.
-2. Runs a **Zombie Sweeper**: Identifies any ticker missing >5% of its data, throws it out, and dynamically replaces it with a healthy reserve ticker.
-3. Aligns the data into a strict 30xT matrix, ignoring market holidays, then calculates the pure Log Return matrix.
-4. Runs a **Causal 60-day Rolling Z-Score** to standardize the entire grid with zero look-ahead bias.
-5. Emits heatmaps and machine-readable data files.
-6. **Smart-Archives**: Identifies whatever was previously in your `outputs/latest/` folder and moves it to `outputs/archive/<timestamp>/` so you never mix up an old run with a new run.
+### Terminal 1: Start Live Ingestion (Layer 1C)
 
-**The Output Structure You Will See:**
-When you run `py main.py`, you will see a highly structured, Unicode-safe readout in your terminal:
-```text
-=================================================================
-|        QUANT MATRIX  --  NASDAQ-100 Tech (30 Stocks)          |
-=================================================================
+This command connects to the Polygon WebSockets, handles automated token-bucket rate limiting for gaps, normalizes the data, and pipes everything into your QuestDB instance. It will ask for your master password to unlock the secure API keys.
 
------------------------------------------------------------------
-  Building Quant Matrix
------------------------------------------------------------------
-  [INFO] Date range : 2024-04-09 -> 2026-04-09
-  [INFO] Tickers    : 30 primary + 5 reserve
-  [OK]   All 30 tickers healthy - no zombies detected
-
------------------------------------------------------------------
-  Outputs Saved
------------------------------------------------------------------
-  [OK]   Matrix heatmap        : outputs/latest/matrix_heatmap.png
-  [OK]   Correlation heatmap   : outputs/latest/correlation_heatmap.png
-  [OK]   Standardized CSV      : outputs/latest/standardized_matrix_30xT.csv
-  [OK]   Usage guide           : outputs/latest/GUIDE.md
-  [OK]   Current matrix pickle : storage/current_matrix.pkl
+```bash
+# Ensure your virtual environment is activated, then run:
+python -m layer1c.live_cli start
 ```
 
-**Where the data goes (What the outputs mean):**
-Inside `outputs/latest/` you will find:
-- **`matrix_heatmap.png`**: Every row is a stock, every column is a day. Bright Red = overperforming standard deviation. Deep Blue = underperforming.
-- **`correlation_heatmap.png`**: A 30x30 grid proving how correlated the US tech sector is. If you see deep blue squares, that stock broke correlation pattern.
-- **`standardized_matrix_30xT.csv`**: The exact numerical Z-score standard grid you can import into Excel, R, or Python.
-- **`GUIDE.md`**: An auto-generated English instruction manual placed inside the folder that explains the files to whichever analyst is reading the folder.
+### Terminal 2: Start the Observability Dashboard (Layer 2)
 
-### Command 2: The Visual Dashboard
-Command: `py -m streamlit run app.py`
+This command boots a rich, terminal-based UI that provides sub-second monitoring of the ingestion pipeline's health, Redis buffer status, database write metrics, and missing-sequence gaps.
 
-**What it does:**
-Bootstraps a local visual interface in your browser containing 4 tabs:
-1. **Build Tab**: Run the pipeline directly from the browser instead of the command line. Allows you to set specific date ranges.
-2. **Matrix Tab**: See the 30xT Matrix Heatmap visually rendered, and download the CSV.
-3. **Correlation Tab**: Features an active slider where you can flag pairs below a certain threshold.
-4. **PCA Tab**: Decompose returns into Beta (Systematic) and Alpha (Idiosyncratic) components using a strict causal sliding window EVD to prevent look-ahead bias.
-5. **Archive Tab**: Visually explore past data runs! Select any historical timestamp and preview what the market looked like exactly on that run.
-
-### Command 3: System Verification
-Command: `py main.py --verify`
-
-**What it does:**
-Checks your local environment and outputs a checklist ensuring all critical files (Heatmaps, Parquet stores, Data Params) actually exist on disk and aren't corrupted.
+```bash
+# Ensure your virtual environment is activated, then run:
+python -m layer2.obs_cli dashboard
+```
 
 ---
 
 ## 🏗 System Architecture
 
-### 1. Data Pipeline Flow
+The Nightshade pipeline is strictly compartmentalized across multiple layers to guarantee performance, stability, and zero cross-contamination.
 
 ```mermaid
-flowchart LR
-    subgraph "Data Pipeline Flow (Batch Process)"
-        FETCH["Fetch Adj Close<br/>(2-year window)"]
-        CLEAN["Zombie Ticker<br/>Detection >5% NaN"]
-        INTERP["Linear Interpolation<br/>(≤2 day gaps)"]
-        LOG["Log Returns<br/>ln(Pt / Pt-1)"]
-        ZSCORE["Causal Z-Score<br/>(60-day Rolling)"]
+flowchart TD
+    %% Define layers
+    subgraph L1C [Layer 1C: Live Ingestion]
+        direction TB
+        POLY[Polygon WebSocket<br/>Adapter]
+        DB[Databento Adapter<br/>Fallback]
+        GAPF[Gap Fill<br/>Orchestrator]
+        NORM[Tick Normalizer]
     end
 
-    subgraph "Archival Output Engine"
-        HEAT["Matrix Heatmap<br/>30xT PNG"]
-        CORR["Correlation Heatmap<br/>30x30 PNG"]
-        CSV["CSV Exports<br/>Grid orientation"]
-        GUIDE["GUIDE.md<br/>+ metadata"]
+    subgraph L1B [Layer 1B: Data Lake]
+        direction LR
+        REDIS[(Redis Stream<br/>Buffer)]
+        QDB[(QuestDB<br/>Persistence)]
     end
 
-    FETCH --> CLEAN --> INTERP --> LOG --> ZSCORE
-    ZSCORE --> HEAT & CORR & CSV & GUIDE
+    subgraph L2 [Layer 2: Observability]
+        direction TB
+        HEALTH[Health Checker]
+        METRIC[Metrics Emitter]
+        OBS[Live CLI Dashboard]
+    end
+
+    subgraph L0 [Layer 0: Core Foundation]
+        SEC[Secrets Manager]
+        CFG[Config Registry]
+        ALRT[Alert Manager]
+    end
+
+    %% Data flow connections
+    POLY -- "Raw Ticks" --> NORM
+    DB -- "Raw Ticks" --> NORM
+    NORM -- "Normalized Ticks" --> REDIS
+    REDIS -- "Batch Writes" --> QDB
+    GAPF -- "Historical Fill" --> QDB
+
+    %% Observability connections
+    L1C -. "Health Metrics" .-> METRIC
+    L1B -. "DB Metrics" .-> METRIC
+    METRIC -. "Aggregated Data" .-> REDIS
+    REDIS -. "Telemetry" .-> OBS
+    HEALTH -. "Status Checks" .-> OBS
+
+    %% Foundation dependencies
+    L0 -. "Provides config/keys/alerts" .-> L1C
+    L0 -. "Provides config/keys/alerts" .-> L1B
+    L0 -. "Provides config/keys/alerts" .-> L2
+
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef storage fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef foundation fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
+    classDef ingest fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef observe fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+
+    class REDIS,QDB storage;
+    class SEC,CFG,ALRT L0 foundation;
+    class POLY,DB,GAPF,NORM ingest;
+    class HEALTH,METRIC,OBS observe;
 ```
 
-### 2. Folder Layout & Organization
-The software leverages an organizational structure so raw logs never mix with artifacts.
+### Component Breakdown
 
-```mermaid
-graph TD
-    subgraph "Entrypoints"
-        MAIN["main.py (The execution core)"]
-        APP["app.py (The visual dashboard)"]
-    end
-
-    subgraph "File System"
-        STORAGE["storage/"]
-        LATEST["outputs/latest/"]
-        ARCHIVE["outputs/archive/"]
-    end
-    
-    MAIN -->|Overwrites current matrix| STORAGE
-    MAIN -->|Generates fresh readable artifacts| LATEST
-    MAIN -->|Rotates past artifacts safely away| ARCHIVE
-```
+* **Layer 0 (Foundation)**: Contains system-wide `logging`, local `secrets` encryption using AES-GCM, and global `config.yaml` state validation.
+* **Layer 1A (Security Master)**: Manages asset mapping and the `NIGHTSHADE_US_TECH` universe tracker.
+* **Layer 1B (Data Lake)**: Manages interactions with QuestDB for tick storage and Redis for temporary data piping.
+* **Layer 1C (Live Ingestion)**: Instantiates the WebSocket streams, enforces protocol structural subtyping for adapters, and runs the token-bucket gap orchestrator.
+* **Layer 2 (Observability)**: Houses the thread-safe `MetricsEmitter` and `HealthChecker` that drive the sub-second dashboard updates.
 
 ---
 
-## 📡 Live Ingestion Setup (Optional)
+## 🧪 Testing
 
-If you are using real-time WebSockets, Quant Matrix also supports streaming infrastructure. WebSockets snap ticks into 1-minute OHLCV bars hosted in Redis.
+Nightshade has **100% unit test coverage** (61/61 tests) across its live ingestion and observability pipelines. All network components are rigorously mocked to run without needing real API keys.
 
-**Prerequisites:** Redis running on `127.0.0.1:6379` + Valid Twelve Data or Polygon Key.
+To run the entire test suite locally:
 
-```powershell
-# Set your environment
-set QM_ENABLE_LIVE_INGEST=1
-set QM_LIVE_PROVIDER=twelvedata
-set TWELVEDATA_API_KEY=your_twelvedata_key
-
-# 1. Start the permanent ingestion loop
-py main.py --ingest-live
-
-# 2. Build an analytics snapshot
-py main.py --snapshot-live
-
-# 3. Persist memory bars to Parquet for backup
-py main.py --persist-live-hourly
-```
-
-## 🧪 Running Tests
-The suite has 45 passing tests covering memory stability, data math, configuration integrity, and timestamp logic.
-```powershell
-py -m unittest discover -s tests -p "test_*.py" -v
+```bash
+# Ensure you are inside your virtual environment
+pytest tests/layer1c tests/layer2 --cov=layer1c --cov=layer2
 ```

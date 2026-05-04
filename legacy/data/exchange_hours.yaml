@@ -1,0 +1,153 @@
+# Exchange hours configuration for Nightshade Market Hours Manager
+
+exchanges:
+  XNAS:
+    name: "NASDAQ"
+    timezone: "US/Eastern"
+    regular_open: "09:30"
+    regular_close: "16:00"
+    pre_market_open: "04:00"
+    post_market_close: "20:00"
+    early_close_time: "13:00"
+    early_close_days:
+      - "2024-11-29"  # Day after Thanksgiving
+      - "2024-12-24"  # Christmas Eve
+      - "2025-11-28"  # Day after Thanksgiving
+      - "2025-12-24"  # Christmas Eve
+    holidays_2024:
+      - "2024-01-01"  # New Year's Day
+      - "2024-01-15"  # MLK Day
+      - "2024-02-19"  # Presidents' Day
+      - "2024-03-29"  # Good Friday
+      - "2024-05-27"  # Memorial Day
+      - "2024-06-19"  # Juneteenth
+      - "2024-07-04"  # Independence Day
+      - "2024-09-02"  # Labor Day
+      - "2024-11-28"  # Thanksgiving
+      - "2024-12-25"  # Christmas
+    holidays_2025:
+      - "2025-01-01"  # New Year's Day
+      - "2025-01-09"  # National Day of Mourning (Carter)
+      - "2025-01-20"  # MLK Day
+      - "2025-02-17"  # Presidents' Day
+      - "2025-04-18"  # Good Friday
+      - "2025-05-26"  # Memorial Day
+      - "2025-06-19"  # Juneteenth
+      - "2025-07-04"  # Independence Day
+      - "2025-09-01"  # Labor Day
+      - "2025-11-27"  # Thanksgiving
+      - "2025-12-25"  # Christmas
+
+  XNYS:
+    name: "NYSE"
+    timezone: "US/Eastern"
+    regular_open: "09:30"
+    regular_close: "16:00"
+    pre_market_open: "04:00"
+    post_market_close: "20:00"
+    early_close_time: "13:00"
+    early_close_days:
+      - "2024-11-29"
+      - "2024-12-24"
+      - "2025-11-28"
+      - "2025-12-24"
+    holidays_2024:
+      - "2024-01-01"
+      - "2024-01-15"
+      - "2024-02-19"
+      - "2024-03-29"
+      - "2024-05-27"
+      - "2024-06-19"
+      - "2024-07-04"
+      - "2024-09-02"
+      - "2024-11-28"
+      - "2024-12-25"
+    holidays_2025:
+      - "2025-01-01"
+      - "2025-01-09"
+      - "2025-01-20"
+      - "2025-02-17"
+      - "2025-04-18"
+      - "2025-05-26"
+      - "2025-06-19"
+      - "2025-07-04"
+      - "2025-09-01"
+      - "2025-11-27"
+      - "2025-12-25"
+
+  XNSE:
+    name: "NSE India"
+    timezone: "Asia/Kolkata"
+    regular_open: "09:15"
+    regular_close: "15:30"
+    pre_market_open: null
+    post_market_close: null
+    holidays_2024:
+      - "2024-01-22"  # Ram Lalla installation
+      - "2024-01-26"  # Republic Day
+      - "2024-03-08"  # Mahashivratri
+      - "2024-03-25"  # Holi
+      - "2024-03-29"  # Good Friday
+      - "2024-04-11"  # Id-Ul-Fitr
+      - "2024-04-14"  # Dr. Ambedkar Jayanti / Ram Navami
+      - "2024-04-17"  # Shri Ram Navami
+      - "2024-04-21"  # Mahavir Jayanti
+      - "2024-05-23"  # Buddha Purnima
+      - "2024-06-17"  # Bakri Id
+      - "2024-07-17"  # Muharram
+      - "2024-08-15"  # Independence Day
+      - "2024-10-02"  # Mahatma Gandhi Jayanti
+      - "2024-10-24"  # Dussehra
+      - "2024-11-01"  # Diwali (Laxmi Pujan)
+      - "2024-11-15"  # Gurunanak Jayanti
+      - "2024-12-25"  # Christmas
+    holidays_2025:
+      - "2025-01-26"  # Republic Day
+      - "2025-02-26"  # Mahashivratri
+      - "2025-03-14"  # Holi
+      - "2025-03-31"  # Id-Ul-Fitr (tentative)
+      - "2025-04-10"  # Shri Ram Navami
+      - "2025-04-14"  # Dr. Ambedkar Jayanti
+      - "2025-04-18"  # Good Friday
+      - "2025-05-12"  # Buddha Purnima
+      - "2025-06-07"  # Bakri Id (tentative)
+      - "2025-08-15"  # Independence Day
+      - "2025-10-02"  # Mahatma Gandhi Jayanti
+      - "2025-10-21"  # Dussehra (tentative)
+      - "2025-10-20"  # Diwali Laxmi Pujan (tentative)
+      - "2025-11-05"  # Gurunanak Jayanti (tentative)
+      - "2025-12-25"  # Christmas
+
+  XBSE:
+    name: "BSE India"
+    timezone: "Asia/Kolkata"
+    regular_open: "09:15"
+    regular_close: "15:30"
+    pre_market_open: null
+    post_market_close: null
+    holidays_2024:
+      - "2024-01-26"
+      - "2024-03-08"
+      - "2024-03-25"
+      - "2024-03-29"
+      - "2024-04-11"
+      - "2024-04-14"
+      - "2024-04-17"
+      - "2024-04-21"
+      - "2024-05-23"
+      - "2024-06-17"
+      - "2024-07-17"
+      - "2024-08-15"
+      - "2024-10-02"
+      - "2024-10-24"
+      - "2024-11-01"
+      - "2024-11-15"
+      - "2024-12-25"
+    holidays_2025:
+      - "2025-01-26"
+      - "2025-02-26"
+      - "2025-03-14"
+      - "2025-04-18"
+      - "2025-08-15"
+      - "2025-10-02"
+      - "2025-12-25"

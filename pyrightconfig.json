@@ -1,0 +1,13 @@
+{
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "basic",
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "warning",
+  "reportUnknownVariableType": "none",
+  "reportUnknownArgumentType": "none",
+  "venvPath": ".",
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__"
+  ]
+}
