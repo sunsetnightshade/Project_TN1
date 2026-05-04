@@ -10,7 +10,10 @@ The pipeline has been rebuilt into modular, robust layers. Follow these exact st
 
 Before you start, ensure you have the following installed on your machine:
 - **Python 3.11 or higher**
-- **Docker & Docker Compose** (required to run QuestDB and Redis locally)
+- **Docker Desktop** (required to run QuestDB and Redis locally)
+  - **Windows Users:** Docker Desktop requires **WSL 2** (Windows Subsystem for Linux) to function correctly.
+  - *If you do not have Docker installed:* Download it from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/). When installing on Windows, ensure the "Use WSL 2 instead of Hyper-V" option is checked.
+  - *If you do not have WSL installed:* Open PowerShell as Administrator and run `wsl --install`. Restart your computer if prompted.
 - **Git**
 
 ### 2. Environment Setup
@@ -35,6 +38,14 @@ source .venv/bin/activate
 
 # Install strictly the required dependencies
 pip install -r requirements.txt
+
+# Troubleshooting Windows Installation Issues:
+# If you encounter an error building 'questdb' (e.g., "dataframe.pxi not found"), 
+# force install the pre-compiled wheel instead of building from source:
+# pip install questdb
+
+# If you encounter a missing module error for 'psycopg2', manually install the binary:
+# pip install psycopg2-binary
 ```
 
 ### 3. Start the Infrastructure Services (Docker)
