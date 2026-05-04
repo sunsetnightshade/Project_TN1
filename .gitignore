@@ -1,5 +1,41 @@
-﻿__pycache__/
-outputs/
-storage/
+# Nightshade secrets & vault
+*.enc
+*.salt
+
+# Python
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
 .venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Secrets & sensitive files
+secrets.yaml
+secrets.json
+.env
+.env.*
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

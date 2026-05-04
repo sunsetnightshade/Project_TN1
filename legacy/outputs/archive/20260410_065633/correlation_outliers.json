@@ -1,0 +1,655 @@
+{
+  "outliers": [
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "WDAY",
+      "correlation": 0.1014
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "WDAY",
+      "correlation": 0.1261
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "WDAY",
+      "correlation": 0.1274
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "WDAY",
+      "correlation": 0.1284
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "TEAM",
+      "correlation": 0.1557
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "INTU",
+      "correlation": 0.1559
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "AMAT",
+      "correlation": 0.1665
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "TEAM",
+      "correlation": 0.1705
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "KLAC",
+      "correlation": 0.171
+    },
+    {
+      "ticker_a": "META",
+      "ticker_b": "WDAY",
+      "correlation": 0.1758
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "WDAY",
+      "correlation": 0.1763
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "TEAM",
+      "correlation": 0.1791
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "AMD",
+      "correlation": 0.1792
+    },
+    {
+      "ticker_a": "INTU",
+      "ticker_b": "ON",
+      "correlation": 0.181
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "TEAM",
+      "correlation": 0.183
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "FTNT",
+      "correlation": 0.1859
+    },
+    {
+      "ticker_a": "WDAY",
+      "ticker_b": "ON",
+      "correlation": 0.1873
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "WDAY",
+      "correlation": 0.1884
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "ZS",
+      "correlation": 0.1898
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "LRCX",
+      "correlation": 0.1921
+    },
+    {
+      "ticker_a": "AVGO",
+      "ticker_b": "WDAY",
+      "correlation": 0.1929
+    },
+    {
+      "ticker_a": "FTNT",
+      "ticker_b": "ON",
+      "correlation": 0.1933
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "FTNT",
+      "correlation": 0.1968
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "INTU",
+      "correlation": 0.1993
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "CSCO",
+      "correlation": 0.2001
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "INTU",
+      "correlation": 0.2009
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "WDAY",
+      "correlation": 0.2022
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "FTNT",
+      "correlation": 0.2038
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "WDAY",
+      "correlation": 0.2057
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "ON",
+      "correlation": 0.2063
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "FTNT",
+      "correlation": 0.2073
+    },
+    {
+      "ticker_a": "AVGO",
+      "ticker_b": "ADBE",
+      "correlation": 0.2074
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "INTU",
+      "correlation": 0.2076
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "TEAM",
+      "correlation": 0.2078
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "WDAY",
+      "correlation": 0.208
+    },
+    {
+      "ticker_a": "AVGO",
+      "ticker_b": "TEAM",
+      "correlation": 0.2084
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "FTNT",
+      "correlation": 0.2141
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "ADBE",
+      "correlation": 0.2152
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "MDB",
+      "correlation": 0.2159
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "INTU",
+      "correlation": 0.2166
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "TEAM",
+      "correlation": 0.2177
+    },
+    {
+      "ticker_a": "INTU",
+      "ticker_b": "CSCO",
+      "correlation": 0.2188
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "FTNT",
+      "correlation": 0.2198
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "MDB",
+      "correlation": 0.2225
+    },
+    {
+      "ticker_a": "MRVL",
+      "ticker_b": "WDAY",
+      "correlation": 0.2226
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "CRWD",
+      "correlation": 0.223
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "DDOG",
+      "correlation": 0.2231
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "MDB",
+      "correlation": 0.2235
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "TEAM",
+      "correlation": 0.2243
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "TEAM",
+      "correlation": 0.2271
+    },
+    {
+      "ticker_a": "TEAM",
+      "ticker_b": "ON",
+      "correlation": 0.23
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "MDB",
+      "correlation": 0.2304
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "MRVL",
+      "correlation": 0.2315
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "MDB",
+      "correlation": 0.2328
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "FTNT",
+      "correlation": 0.2337
+    },
+    {
+      "ticker_a": "AVGO",
+      "ticker_b": "FTNT",
+      "correlation": 0.2342
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "LRCX",
+      "correlation": 0.2359
+    },
+    {
+      "ticker_a": "MRVL",
+      "ticker_b": "FTNT",
+      "correlation": 0.2364
+    },
+    {
+      "ticker_a": "SNPS",
+      "ticker_b": "FTNT",
+      "correlation": 0.2385
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "FTNT",
+      "correlation": 0.2391
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "ON",
+      "correlation": 0.2393
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "DDOG",
+      "correlation": 0.2397
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "TXN",
+      "correlation": 0.2404
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "ADBE",
+      "correlation": 0.2409
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "SNPS",
+      "correlation": 0.2413
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "AMAT",
+      "correlation": 0.2419
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "WDAY",
+      "correlation": 0.2424
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "MDB",
+      "correlation": 0.2424
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "ZS",
+      "correlation": 0.2427
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "INTU",
+      "correlation": 0.2439
+    },
+    {
+      "ticker_a": "ADBE",
+      "ticker_b": "TXN",
+      "correlation": 0.2449
+    },
+    {
+      "ticker_a": "MRVL",
+      "ticker_b": "ZS",
+      "correlation": 0.2457
+    },
+    {
+      "ticker_a": "ZS",
+      "ticker_b": "ON",
+      "correlation": 0.247
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "INTU",
+      "correlation": 0.2477
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "NFLX",
+      "correlation": 0.2478
+    },
+    {
+      "ticker_a": "SNPS",
+      "ticker_b": "CSCO",
+      "correlation": 0.2492
+    },
+    {
+      "ticker_a": "DDOG",
+      "ticker_b": "ON",
+      "correlation": 0.25
+    },
+    {
+      "ticker_a": "META",
+      "ticker_b": "INTU",
+      "correlation": 0.252
+    },
+    {
+      "ticker_a": "MDB",
+      "ticker_b": "ON",
+      "correlation": 0.2522
+    },
+    {
+      "ticker_a": "MRVL",
+      "ticker_b": "INTU",
+      "correlation": 0.2529
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "ZS",
+      "correlation": 0.2533
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "INTU",
+      "correlation": 0.2555
+    },
+    {
+      "ticker_a": "AVGO",
+      "ticker_b": "INTU",
+      "correlation": 0.2555
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "FTNT",
+      "correlation": 0.2596
+    },
+    {
+      "ticker_a": "QCOM",
+      "ticker_b": "FTNT",
+      "correlation": 0.2632
+    },
+    {
+      "ticker_a": "TXN",
+      "ticker_b": "PANW",
+      "correlation": 0.2633
+    },
+    {
+      "ticker_a": "MSFT",
+      "ticker_b": "TXN",
+      "correlation": 0.2634
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "ZS",
+      "correlation": 0.2639
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "ZS",
+      "correlation": 0.2641
+    },
+    {
+      "ticker_a": "META",
+      "ticker_b": "MDB",
+      "correlation": 0.2656
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "CSCO",
+      "correlation": 0.2657
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "ZS",
+      "correlation": 0.2657
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "ZS",
+      "correlation": 0.269
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "MDB",
+      "correlation": 0.2694
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "INTU",
+      "correlation": 0.2699
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "TEAM",
+      "correlation": 0.2699
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "NFLX",
+      "correlation": 0.2704
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "ADBE",
+      "correlation": 0.2705
+    },
+    {
+      "ticker_a": "CRWD",
+      "ticker_b": "ON",
+      "correlation": 0.2709
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "KLAC",
+      "correlation": 0.2725
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "CSCO",
+      "correlation": 0.2738
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "MDB",
+      "correlation": 0.2739
+    },
+    {
+      "ticker_a": "QCOM",
+      "ticker_b": "WDAY",
+      "correlation": 0.2753
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "FTNT",
+      "correlation": 0.276
+    },
+    {
+      "ticker_a": "PANW",
+      "ticker_b": "ON",
+      "correlation": 0.2774
+    },
+    {
+      "ticker_a": "SNPS",
+      "ticker_b": "MDB",
+      "correlation": 0.2777
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "QCOM",
+      "correlation": 0.2788
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "TEAM",
+      "correlation": 0.2836
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "CSCO",
+      "correlation": 0.2836
+    },
+    {
+      "ticker_a": "QCOM",
+      "ticker_b": "MDB",
+      "correlation": 0.2849
+    },
+    {
+      "ticker_a": "CSCO",
+      "ticker_b": "FTNT",
+      "correlation": 0.2849
+    },
+    {
+      "ticker_a": "META",
+      "ticker_b": "TEAM",
+      "correlation": 0.2852
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "CRWD",
+      "correlation": 0.2864
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "DDOG",
+      "correlation": 0.2864
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "TEAM",
+      "correlation": 0.2866
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "ZS",
+      "correlation": 0.2867
+    },
+    {
+      "ticker_a": "AMD",
+      "ticker_b": "PANW",
+      "correlation": 0.2875
+    },
+    {
+      "ticker_a": "META",
+      "ticker_b": "DDOG",
+      "correlation": 0.2879
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "AMD",
+      "correlation": 0.2879
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "NFLX",
+      "correlation": 0.2894
+    },
+    {
+      "ticker_a": "LRCX",
+      "ticker_b": "MDB",
+      "correlation": 0.2895
+    },
+    {
+      "ticker_a": "NFLX",
+      "ticker_b": "DDOG",
+      "correlation": 0.2896
+    },
+    {
+      "ticker_a": "NVDA",
+      "ticker_b": "MDB",
+      "correlation": 0.2903
+    },
+    {
+      "ticker_a": "GOOGL",
+      "ticker_b": "DDOG",
+      "correlation": 0.2909
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "SNPS",
+      "correlation": 0.2924
+    },
+    {
+      "ticker_a": "SNPS",
+      "ticker_b": "WDAY",
+      "correlation": 0.2926
+    },
+    {
+      "ticker_a": "TSLA",
+      "ticker_b": "DDOG",
+      "correlation": 0.2946
+    },
+    {
+      "ticker_a": "KLAC",
+      "ticker_b": "MDB",
+      "correlation": 0.2956
+    },
+    {
+      "ticker_a": "AMAT",
+      "ticker_b": "PANW",
+      "correlation": 0.2977
+    },
+    {
+      "ticker_a": "AAPL",
+      "ticker_b": "DDOG",
+      "correlation": 0.2981
+    }
+  ],
+  "count": 130
+}

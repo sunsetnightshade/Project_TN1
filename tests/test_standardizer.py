@@ -30,29 +30,36 @@ class TestStandardize(unittest.TestCase):
         self.assertIsInstance(result, StandardizationResult)
 
     def test_output_shape_matches_input(self):
-        r = _make_log_returns(n_days=50, n_tickers=30)
+        r = _make_log_returns(n_days=100, n_tickers=30)
         import tempfile, pathlib
         with tempfile.TemporaryDirectory() as tmp:
             result = standardize_and_plot_heatmap(r, heatmap_path=pathlib.Path(tmp) / "h.png")
         self.assertEqual(result.standardized.shape, r.shape)
 
-    def test_column_means_near_zero(self):
-        """StandardScaler should produce zero-mean per column."""
-        r = _make_log_returns(n_days=200)
+    def test_rolling_window_padding(self):
+        """Causal rolling window should pad the first (window - 1) rows with NaN."""
+        r = _make_log_returns(n_days=100)
         import tempfile, pathlib
         with tempfile.TemporaryDirectory() as tmp:
             result = standardize_and_plot_heatmap(r, heatmap_path=pathlib.Path(tmp) / "h.png")
-        means = result.standardized.mean(axis=0).abs()
-        self.assertTrue((means < 1e-10).all(), f"Column means not near zero: {means.max():.2e}")
+        
+        # Window is 60, so first 59 rows should be NaN
+        self.assertTrue(result.standardized.iloc[:59].isna().all().all(), "First 59 rows not NaN")
+        self.assertFalse(result.standardized.iloc[59:].isna().any().any(), "Remaining rows contain NaN")
 
-    def test_column_stds_near_one(self):
-        """StandardScaler should produce unit standard deviation per column."""
-        r = _make_log_returns(n_days=200)
+    def test_scaler_params_match_last_window(self):
+        """scaler_params mean and scale should match the last 60 periods of the input."""
+        r = _make_log_returns(n_days=100)
         import tempfile, pathlib
         with tempfile.TemporaryDirectory() as tmp:
             result = standardize_and_plot_heatmap(r, heatmap_path=pathlib.Path(tmp) / "h.png")
-        stds = result.standardized.std(axis=0, ddof=0)
-        self.assertTrue((abs(stds - 1.0) < 1e-10).all(), f"Column stds not near 1: {stds.max():.4f}")
+        
+        last_60 = r.iloc[-60:]
+        expected_mean = last_60.mean(axis=0).values
+        expected_std = last_60.std(axis=0, ddof=0).values
+        
+        np.testing.assert_allclose(result.scaler_params["mean"], expected_mean, rtol=1e-5, err_msg="Mean mismatch")
+        np.testing.assert_allclose(result.scaler_params["scale"], expected_std, rtol=1e-5, err_msg="Scale mismatch")
 
     def test_scaler_params_keys(self):
         """scaler_params must contain mean, scale, feature_names, correlation_outliers."""
@@ -67,7 +74,7 @@ class TestStandardize(unittest.TestCase):
     def test_both_heatmaps_created(self):
         """Both matrix_heatmap.png and correlation_heatmap.png should be created."""
         import tempfile, pathlib
-        r = _make_log_returns(n_days=100)
+        r = _make_log_returns(n_days=40)
         with tempfile.TemporaryDirectory() as tmp:
             p = pathlib.Path(tmp) / "matrix_heatmap.png"
             standardize_and_plot_heatmap(r, heatmap_path=p)
