@@ -1,7 +1,7 @@
 # Quant Matrix — Output Guide
 
-> **Generated automatically by the pipeline on 2026-05-04T17:49:00.569927+00:00**
-> Run: `2024-05-04 → 2026-05-04`
+> **Generated automatically by the pipeline on 2026-04-24T17:27:23.983259+00:00**
+> Run: `2024-04-24 → 2026-04-24`
 
 ---
 
