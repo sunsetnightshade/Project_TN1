@@ -1,8 +1,8 @@
 {
-  "build_timestamp_utc": "2026-05-04T17:49:00.569927+00:00",
+  "build_timestamp_utc": "2026-04-24T17:27:23.983259+00:00",
   "date_range": {
-    "start": "2024-05-04",
-    "end": "2026-05-04"
+    "start": "2024-04-24",
+    "end": "2026-04-24"
   },
   "tickers": [
     "AAPL",
@@ -37,10 +37,10 @@
     "ON"
   ],
   "matrix_shape": {
-    "rows_T": 498,
+    "rows_T": 500,
     "cols_tickers": 30
   },
   "zombies_dropped": [],
   "replacements": [],
-  "correlation_outlier_count": 154
+  "correlation_outlier_count": 139
 }

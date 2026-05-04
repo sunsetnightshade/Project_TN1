@@ -1,0 +1,16 @@
+{
+  "universes": [
+    {
+      "name": "NIGHTSHADE_US_TECH",
+      "added_date": "2024-01-01",
+      "tickers": ["AAPL", "MSFT", "NVDA", "GOOGL", "META", "AMZN", "TSLA", "AVGO", "ADBE", "TXN",
+                  "QCOM", "AMAT", "INTU", "AMD", "CRM", "INTC", "PYPL", "NFLX", "ORCL", "IBM"]
+    },
+    {
+      "name": "NIGHTSHADE_NIFTY_IT",
+      "added_date": "2024-01-01",
+      "tickers": ["INFY.NS", "TCS.NS", "HCLTECH.NS", "TECHM.NS", "WIPRO.NS",
+                  "LTIM.NS", "PERSISTENT.NS", "COFORGE.NS", "MPHASIS.NS", "OFSS.NS"]
+    }
+  ]
+}
